@@ -18,16 +18,15 @@ const isRouteMatch = (route: any, req: ILambdaRequest): boolean => {
 
 export const routeHandler = async (
   req: ILambdaRequest,
-  routes: IAPIRoute[],
-  callback: Function
+  routes: IAPIRoute[]
 ) => {
   const reqRoute = routes.find(route => isRouteMatch(route, req));
   if (reqRoute) {
-    await reqRoute.handlerFunction(req, callback);
+    return await reqRoute.handlerFunction(req);
   } else {
-    callback(null, {
+    return {
       statusCode: 403,
       body: 'Forbidden',
-    });
+    };
   }
 };

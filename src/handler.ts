@@ -1,4 +1,4 @@
-import { IAPIRoute, ILambdaRequest } from './types';
+import { IAPIRoute, ILambdaRequest, IRouteResponse } from './types';
 import { routeHandler } from './routeHandler';
 
 export const handler = (routes: IAPIRoute[]) => async (
@@ -6,13 +6,12 @@ export const handler = (routes: IAPIRoute[]) => async (
   _: any,
   callback: Function
 ): Promise<any> => {
-  try {
-    await routeHandler(event, routes, callback);
-  } catch (e) {
-    console.log(e);
-    callback(null, {
-      statusCode: 500,
-      body: 'Unknown error occured',
-    });
-  }
+  return routeHandler(event, routes)
+    .then((data: IRouteResponse) => callback(null, data))
+    .catch((err: string) =>
+      callback(null, {
+        statusCode: 500,
+        body: err,
+      })
+    );
 };

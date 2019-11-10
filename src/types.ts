@@ -10,8 +10,13 @@ export enum httpMethod {
   TRACE = 'trace',
 }
 
+export interface IRouteResponse {
+  statusCode: number;
+  body: string;
+}
+
 export interface IAPIRoute {
-  handlerFunction: (req: any, callback: any) => Promise<void>;
+  handlerFunction: (req: any) => Promise<IRouteResponse>;
   httpMethod: httpMethod;
   path: string;
 }
