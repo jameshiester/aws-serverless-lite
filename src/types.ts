@@ -1,13 +1,13 @@
 export enum httpMethod {
-  CONNECT = 'connect',
-  DELETE = 'delete',
-  GET = 'get',
-  HEAD = 'head',
-  OPTIONS = 'options',
-  PATCH = 'patch',
-  POST = 'post',
-  PUT = 'put',
-  TRACE = 'trace',
+  CONNECT = 'CONNECT',
+  DELETE = 'DELETE',
+  GET = 'GET',
+  HEAD = 'HEAD',
+  OPTIONS = 'OPTIONS',
+  PATCH = 'PATCH',
+  POST = 'POST',
+  PUT = 'PUT',
+  TRACE = 'TRACE',
 }
 
 export interface IRouteResponse {
