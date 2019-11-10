@@ -1,4 +1,4 @@
 import { handler } from './handler';
-import { httpMethod, IAPIRoute, ILambdaRequest } from './types';
+import { httpMethod, IAPIRoute, ILambdaRequest, IRouteResponse } from './types';
 
-export { handler, httpMethod, IAPIRoute, ILambdaRequest };
+export { handler, httpMethod, IAPIRoute, ILambdaRequest, IRouteResponse };
