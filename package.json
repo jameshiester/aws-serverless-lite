@@ -1,10 +1,11 @@
 {
   "name": "aws-serverless-lite",
-  "version": "1.0.3",
+  "version": "1.0.9",
   "description": "Run serverless applications and REST APIs using Node.js application framework on top of AWS Lambda and AWS API Gateway.  This library is intended for use with Proxy method configurations.  ",
   "main": "dist/index.js",
   "scripts": {
     "test": "jest",
+    "coverage": "jest --coverage",
     "build": "tsc"
   },
   "keywords": [

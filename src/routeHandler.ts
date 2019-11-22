@@ -1,15 +1,39 @@
-import { get } from 'lodash';
-import { IAPIRoute, ILambdaRequest } from './types';
+import { get } from "lodash";
+import { IAPIRoute, ILambdaRequest } from "./types";
 
-const isPartMatch = (reqPart: string, routePart: string) => {
-  return routePart.startsWith(':') || reqPart === routePart;
+const ROUTE_PARAM_PREFIX = ":";
+const PATH_SEPARATOR = "/";
+
+export const isPartMatch = (reqPart: string, routePart: string) => {
+  return (
+    routePart &&
+    (routePart.startsWith(ROUTE_PARAM_PREFIX) || reqPart === routePart)
+  );
 };
 
-const isRouteMatch = (route: any, req: ILambdaRequest): boolean => {
-  const requestRouteParts = get(req, 'pathParameters.proxy', '').split('/');
-  const routeParts = route.path.split('/');
+export const getRouteParams = (
+  routeParts: string[],
+  requestRouteParts: string[]
+) =>
+  routeParts.reduce((acc: any, part: string, index) => {
+    if (part.startsWith(ROUTE_PARAM_PREFIX) && part.length > 0) {
+      acc[part.replace(ROUTE_PARAM_PREFIX, "")] = requestRouteParts[index];
+    }
+    return acc;
+  }, {});
+
+export const isRouteMatch = (
+  route: IAPIRoute,
+  request: ILambdaRequest
+): boolean => {
+  const requestRouteParts = get(request, "pathParameters.proxy", "").split(
+    PATH_SEPARATOR
+  );
+  const routeParts = route.path.split(PATH_SEPARATOR);
+  if (requestRouteParts.length != routeParts.length) return false;
+  request.routeParameters = getRouteParams(routeParts, requestRouteParts);
   return (
-    req.requestContext.httpMethod === route.httpMethod &&
+    request.requestContext.httpMethod === route.httpMethod &&
     requestRouteParts.every((part: string, index: number) =>
       isPartMatch(part, routeParts[index])
     )
@@ -20,13 +44,21 @@ export const routeHandler = async (
   req: ILambdaRequest,
   routes: IAPIRoute[]
 ) => {
-  const reqRoute = routes.find(route => isRouteMatch(route, req));
-  if (reqRoute) {
-    return await reqRoute.handlerFunction(req);
-  } else {
+  try {
+    const reqRoute = routes.find(route => isRouteMatch(route, req));
+    if (reqRoute) {
+      return await reqRoute.handlerFunction(req);
+    } else {
+      return {
+        statusCode: 403,
+        body: "Forbidden"
+      };
+    }
+  } catch (err) {
+    console.log(err);
     return {
-      statusCode: 403,
-      body: 'Forbidden',
+      statusCode: 500,
+      body: err
     };
   }
 };

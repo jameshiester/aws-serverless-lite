@@ -24,9 +24,10 @@ export interface IAPIRoute {
 export interface ILambdaRequest {
   path: string;
   pathParameters: any;
+  routeParameters?: any;
   requestContext: {
     resourcePath: string;
     httpMethod: string;
   };
-  body: any;
+  body?: any;
 }
