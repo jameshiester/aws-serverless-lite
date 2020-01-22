@@ -1,8 +1,9 @@
-import { get } from "lodash";
-import { IAPIRoute, ILambdaRequest } from "./types";
+import { get } from 'lodash';
+import { IAPIRoute, ILambdaRequest } from './types';
+import { forbidden } from '.';
 
-const ROUTE_PARAM_PREFIX = ":";
-const PATH_SEPARATOR = "/";
+const ROUTE_PARAM_PREFIX = ':';
+const PATH_SEPARATOR = '/';
 
 export const isPartMatch = (reqPart: string, routePart: string) => {
   return (
@@ -17,7 +18,7 @@ export const getRouteParams = (
 ) =>
   routeParts.reduce((acc: any, part: string, index) => {
     if (part.startsWith(ROUTE_PARAM_PREFIX) && part.length > 0) {
-      acc[part.replace(ROUTE_PARAM_PREFIX, "")] = requestRouteParts[index];
+      acc[part.replace(ROUTE_PARAM_PREFIX, '')] = requestRouteParts[index];
     }
     return acc;
   }, {});
@@ -26,7 +27,7 @@ export const isRouteMatch = (
   route: IAPIRoute,
   request: ILambdaRequest
 ): boolean => {
-  const requestRouteParts = get(request, "pathParameters.proxy", "").split(
+  const requestRouteParts = get(request, 'pathParameters.proxy', '').split(
     PATH_SEPARATOR
   );
   const routeParts = route.path.split(PATH_SEPARATOR);
@@ -40,25 +41,37 @@ export const isRouteMatch = (
   );
 };
 
+const hasRequiredScopes = (
+  request: ILambdaRequest,
+  requiredScopes: string[] = []
+): boolean => {
+  const userScopes = get(request, 'requestContext.authorizer.scope', '').split(
+    ' '
+  );
+  return (
+    !requiredScopes.length ||
+    requiredScopes.every((scope: string) =>
+      userScopes.find((w: string) => w === scope)
+    )
+  );
+};
+
 export const routeHandler = async (
   req: ILambdaRequest,
   routes: IAPIRoute[]
 ) => {
   try {
     const reqRoute = routes.find(route => isRouteMatch(route, req));
-    if (reqRoute) {
+    if (reqRoute && hasRequiredScopes(req, reqRoute.requiredScopes)) {
       return await reqRoute.handlerFunction(req);
     } else {
-      return {
-        statusCode: 403,
-        body: "Forbidden"
-      };
+      return forbidden;
     }
   } catch (err) {
     console.log(err);
     return {
       statusCode: 500,
-      body: err
+      body: err,
     };
   }
 };
