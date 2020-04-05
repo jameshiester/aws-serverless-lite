@@ -1,6 +1,8 @@
 import { get } from 'lodash';
 import { IAPIRoute, ILambdaRequest } from './types';
-import { forbidden } from '.';
+import { forbidden, badRequest } from '.';
+import { validate } from '@babel/types';
+import { validateSchema } from './validate';
 
 const ROUTE_PARAM_PREFIX = ':';
 const PATH_SEPARATOR = '/';
@@ -63,6 +65,17 @@ export const routeHandler = async (
   try {
     const reqRoute = routes.find(route => isRouteMatch(route, req));
     if (reqRoute && hasRequiredScopes(req, reqRoute.requiredScopes)) {
+      const { parseBody = true } = reqRoute;
+      if (parseBody) req.body = JSON.parse(req.body);
+      if (reqRoute.schema) {
+        const validationResult = await validateSchema(
+          reqRoute.schema,
+          req.body
+        );
+        if (validationResult.isFailure()) {
+          return badRequest(validationResult.value);
+        }
+      }
       return await reqRoute.handlerFunction(req);
     } else {
       return forbidden;

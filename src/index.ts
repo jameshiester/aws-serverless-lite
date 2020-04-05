@@ -1,8 +1,9 @@
 import { handler } from './handler';
 import { httpMethod, IAPIRoute, ILambdaRequest, IRouteResponse } from './types';
-import { ok, forbidden } from './constant';
+import { badRequest, ok, forbidden, notFound } from './constant';
 
 export {
+  badRequest,
   forbidden,
   handler,
   httpMethod,
@@ -10,4 +11,5 @@ export {
   ILambdaRequest,
   IRouteResponse,
   ok,
+  notFound,
 };
